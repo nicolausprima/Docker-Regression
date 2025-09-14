@@ -1,3 +1,4 @@
+# Kode ini direvisi oleh tim inti.
 class Matrix:
  """
  Kelas untuk merepresentasikan objek matriks.
