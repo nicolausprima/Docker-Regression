@@ -1,5 +1,5 @@
 # matriks/operations/multiplier.py
-from ..matrix import Matrix
+from matrix import Matrix
 
 def multiply_matrices(matrix1, matrix2):
  """
