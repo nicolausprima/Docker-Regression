@@ -14,3 +14,8 @@ class Matrix:
   if not all(len(row) == self.cols for row in data):
    raise ValueError("Semua baris harus memiliki jumlah kolom yang sama.")
 
+ def __str__(self):
+    result = []
+    for row in self.data:
+        result.append(" ".join(str(val) for val in row))
+    return "\n".join(result)

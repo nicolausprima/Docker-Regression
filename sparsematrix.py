@@ -25,7 +25,7 @@ def __str__(self):
   for c in range(self.cols):
    row_str.append(str(self.get_value(r, c)))
   output += " ".join(row_str) + "\n"
- return str(self.data)
+ return output.strip()
 
 def multiply_sparse_matrices(A: SparseMatrix, B: SparseMatrix) -> SparseMatrix:
     if A.cols != B.rows:

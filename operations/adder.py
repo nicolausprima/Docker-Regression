@@ -1,3 +1,4 @@
+from sparsematrix import SparseMatrix
 from matrix import Matrix
 
 def add_matrices(matrix1, matrix2):
@@ -12,5 +13,5 @@ def add_matrices(matrix1, matrix2):
   for j in range(matrix1.cols):
    result_data[i][j] = matrix1.data[i][j] + matrix2.data[i][j]
 
- return Matrix(result_data)
+ return SparseMatrix(result_data)
 
