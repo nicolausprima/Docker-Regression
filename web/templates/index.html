@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Regression App (Flask)</title>
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 960px; margin: 24px auto; }
+    .card { padding: 16px; border: 1px solid #ddd; border-radius: 10px; }
+    .table { border-collapse: collapse; width: 100%; }
+    .table th, .table td { border: 1px solid #ddd; padding: 6px; }
+    label { display:block; margin-top:10px; }
+    .flash { background:#fff3cd; border:1px solid #ffeeba; padding:10px; border-radius:8px; margin:12px 0; }
+  </style>
+</head>
+<body>
+  <h2>Upload CSV untuk Regresi (Flask)</h2>
+
+  {% with messages = get_flashed_messages() %}
+    {% if messages %}
+      <div class="flash">
+        {% for msg in messages %}<div>{{ msg }}</div>{% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+
+  <div class="card">
+    <form action="/process" method="post" enctype="multipart/form-data">
+      <label>File CSV</label>
+      <input type="file" name="file" accept=".csv" required>
+
+      <label>Kolom Target (y)</label>
+      <input type="text" name="target_column" placeholder="contoh: Harga" required>
+
+      <p style="margin-top:12px;"><button type="submit">Jalankan Regresi</button></p>
+    </form>
+  </div>
+
+  {% if note %}
+    <p><b>{{ note }}</b></p>
+  {% endif %}
+
+  {% if summary_text %}
+    <h3>Hasil Regresi OLS</h3>
+    <pre>{{ summary_text }}</pre>
+  {% endif %}
+
+  {% if table_html %}
+    <h3>Preview Data</h3>
+    <div class="card">
+      {{ table_html | safe }}
+    </div>
+  {% endif %}
+
+  {% if download_ready %}
+    <p><a href="/download">⬇️ Download hasil (CSV)</a></p>
+  {% endif %}
+</body>
+</html>
