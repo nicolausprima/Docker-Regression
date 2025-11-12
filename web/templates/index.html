@@ -1,58 +1,138 @@
 <!DOCTYPE html>
-<html>
+<html lang="id">
 <head>
-  <meta charset="utf-8">
-  <title>Regression App (Flask)</title>
+  <meta charset="utf-8" />
+  <title>Analitik Matriks & Regresi</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <!-- Bootstrap 5 -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <!-- Bootstrap Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet" />
   <style>
-    body { font-family: Arial, sans-serif; max-width: 960px; margin: 24px auto; }
-    .card { padding: 16px; border: 1px solid #ddd; border-radius: 10px; }
-    .table { border-collapse: collapse; width: 100%; }
-    .table th, .table td { border: 1px solid #ddd; padding: 6px; }
-    label { display:block; margin-top:10px; }
-    .flash { background:#fff3cd; border:1px solid #ffeeba; padding:10px; border-radius:8px; margin:12px 0; }
+    body {
+      background-color: #f9fafb;
+    }
+    .card {
+      border-radius: 14px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+    }
+    .btn-primary {
+      background-color: #2563eb;
+      border: none;
+    }
+    .btn-primary:hover {
+      background-color: #1e40af;
+    }
+    pre {
+      background-color: #f3f4f6;
+      padding: 12px;
+      border-radius: 8px;
+      border: 1px solid #e5e7eb;
+    }
+    .section-narrow {
+      max-width: 980px;
+      margin: 0 auto;
+    }
   </style>
 </head>
 <body>
-  <h2>Upload CSV untuk Regresi (Flask)</h2>
+  <div class="container py-4">
+    <!-- Header -->
+    <div class="d-flex align-items-center gap-2 mb-1 section-narrow">
+      <i class="bi bi-calculator-fill text-primary" style="font-size: 1.8rem;"></i>
+      <h2 class="mb-0 fw-bold text-primary">Analitik Matriks & Regresi</h2>
+    </div>
+    <p class="text-muted section-narrow">
+      Pipeline otomatis: <b>Inverse → Transpose → Regression</b> (menggunakan library internal Anda).
+    </p>
 
-  {% with messages = get_flashed_messages() %}
-    {% if messages %}
-      <div class="flash">
-        {% for msg in messages %}<div>{{ msg }}</div>{% endfor %}
+    <!-- Alerts -->
+    <div class="section-narrow">
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          {% for cat, msg in messages %}
+            <div class="alert alert-{{ cat }} alert-dismissible fade show" role="alert">
+              {{ msg }}
+              <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+          {% endfor %}
+        {% endif %}
+      {% endwith %}
+    </div>
+
+    <!-- Form -->
+    <div class="card p-4 mb-4 section-narrow">
+      <form action="/process" method="post" enctype="multipart/form-data" class="row g-3">
+        <div class="col-md-6">
+          <label class="form-label">Upload File CSV</label>
+          <input type="file" name="file" accept=".csv" class="form-control" required />
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Kolom Target (untuk Regresi)</label>
+          <input
+            type="text"
+            name="target_column"
+            placeholder="contoh: Efisiensi_Produksi"
+            class="form-control"
+            required
+            value="{{ target_column or '' }}"
+          />
+        </div>
+        <div class="col-12 text-end">
+          <button class="btn btn-primary px-4">Proses</button>
+        </div>
+      </form>
+    </div>
+
+    {% if table_input %}
+    <!-- Tiga panel hasil: Input, Inverse, Transpose -->
+    <div class="row g-3 section-narrow">
+      <div class="col-md-4">
+        <div class="card p-3 h-100">
+          <h5 class="text-primary mb-2"><i class="bi bi-table"></i> Data Asli</h5>
+          <div class="table-responsive">{{ table_input|safe }}</div>
+        </div>
       </div>
+      <div class="col-md-4">
+        <div class="card p-3 h-100">
+          <h5 class="text-success mb-2"><i class="bi bi-arrow-repeat"></i> Hasil Inverse</h5>
+          <div class="table-responsive">{{ table_inverse|safe }}</div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="card p-3 h-100">
+          <h5 class="text-warning mb-2"><i class="bi bi-arrow-return-left"></i> Hasil Transpose</h5>
+          <div class="table-responsive">{{ table_transpose|safe }}</div>
+        </div>
+      </div>
+    </div>
     {% endif %}
-  {% endwith %}
 
-  <div class="card">
-    <form action="/process" method="post" enctype="multipart/form-data">
-      <label>File CSV</label>
-      <input type="file" name="file" accept=".csv" required>
+    {% if summary_text %}
+    <!-- Ringkasan Regresi — DIPUSATKAN -->
+    <div class="section-narrow">
+      <div class="card p-3 mt-4">
+        <h5 class="mb-2">
+          <i class="bi bi-graph-up-arrow text-primary"></i>
+          <span class="fw-semibold">Ringkasan Regresi (OLS)</span>
+        </h5>
+        <div class="mx-auto" style="max-width: 900px;">
+          <pre class="mb-0">{{ summary_text }}</pre>
+        </div>
+      </div>
+    </div>
+    {% endif %}
 
-      <label>Kolom Target (y)</label>
-      <input type="text" name="target_column" placeholder="contoh: Harga" required>
-
-      <p style="margin-top:12px;"><button type="submit">Jalankan Regresi</button></p>
-    </form>
+    {% if download_ready %}
+    <div class="text-center mt-3 section-narrow">
+      <a href="/download" class="btn btn-outline-primary">
+        <i class="bi bi-download"></i> Download CSV Hasil
+      </a>
+    </div>
+    {% endif %}
   </div>
 
-  {% if note %}
-    <p><b>{{ note }}</b></p>
-  {% endif %}
-
-  {% if summary_text %}
-    <h3>Hasil Regresi OLS</h3>
-    <pre>{{ summary_text }}</pre>
-  {% endif %}
-
-  {% if table_html %}
-    <h3>Preview Data</h3>
-    <div class="card">
-      {{ table_html | safe }}
-    </div>
-  {% endif %}
-
-  {% if download_ready %}
-    <p><a href="/download">⬇️ Download hasil (CSV)</a></p>
-  {% endif %}
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
+
